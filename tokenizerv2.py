@@ -38,12 +38,19 @@ if __name__ == "__main__":
         tokenizer = tiktoken.get_encoding("gpt2")
         ids = tokenizer.encode(longtext, allowed_special={"<|endoftext|>"})
 
-        text1 = "Hello, do you like tea?"
-        text2 = "In the sunlit terraces of the palace."
-        text = " <|endoftext|> ".join((text1, text2))
+        # text1 = "Hello, do you like tea?"
+        # text2 = "In the sunlit terraces of the someunknownPlace."
+        # text = " <|endoftext|> ".join((text1, text2))
+        text = "Akwirw ier"
         
         integers = tokenizer.encode(text, allowed_special={"<|endoftext|>"})
-        print(integers)
+        #print(integers)
+
+        tokens = [tokenizer.decode([i]) for i in integers]
+        #print(tokens)
+
+        mapping = [(i,s) for i,s in zip(integers, tokens)]
+        print(mapping)
 
         strings = tokenizer.decode(integers)
         print(strings)
