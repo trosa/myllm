@@ -12,11 +12,12 @@ def splitwords(longtext):
     return vector
 
 def create_vocabulary(tokenized):
-    all_words = sorted(set(tokenized))
-    vocab = {token:integer for integer,token in enumerate(all_words)}
+    all_tokens = sorted(list(set(tokenized)))
+    all_tokens.extend(["<|endoftext|>", "<|unk|>"])
+    vocab = {token:integer for integer,token in enumerate(all_tokens)}
     return vocab
 
-class SimpleTokenizerV1:
+class SimpleTokenizerV2:
     def __init__(self, vocab):
         self.str_to_int = vocab
         self.int_to_str = {i:s for s,i in vocab.items()}
@@ -24,6 +25,7 @@ class SimpleTokenizerV1:
     def encode(self, longtext):
         vector = re.split(r'([,.:;?_!"()\']|--|\s)', longtext)
         vector = [item.strip() for item in vector if item.strip()]
+        vector = [item if item in self.str_to_int else "<|unk|>" for item in vector]
         ids = [self.str_to_int[s] for s in vector]
         return ids
     
@@ -44,15 +46,20 @@ if __name__ == "__main__":
 
         vocab = create_vocabulary(tokenized)
         
-        for i, (token, index) in enumerate(vocab.items()):
-            if i >= 50:
-                break
-            print(f"{token}: {index}")
+        for index, token in enumerate(list(vocab.items())[-5:]):
+            print(token)
 
         print("Vocabulary size is", len(vocab))
 
-        tokenizer = SimpleTokenizerV1(vocab)
+        tokenizer = SimpleTokenizerV2(vocab)
         ids = tokenizer.encode(longtext)
+
+        text1 = "Hello, do you like tea?"
+        text2 = "In the sunlit terraces of the palace."
+        text = " <|endoftext|> ".join((text1, text2))
+        
+        print(tokenizer.encode(text))
+        print(tokenizer.decode(tokenizer.encode(text)))
 
     else:
         print("Please provide an input file")
