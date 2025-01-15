@@ -1,3 +1,4 @@
+from functools import total_ordering
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
@@ -17,6 +18,24 @@ X_test = torch.tensor([
     [2.6, -1.6]
 ])
 y_test = torch.tensor([0, 1])
+
+def compute_accuracy(model, dataloader):
+
+    model = model.eval()
+    correct = 0.0
+    total_examples = 0
+
+    for idx, (features, labels) in enumerate(dataloader):
+
+        with torch.no_grad():
+            logits = model(features)
+        
+        predictions = torch.argmax(logits, dim=1)
+        compare = labels == predictions
+        correct += torch.sum(compare)
+        total_examples += len(compare)
+
+    return (correct / total_examples).item()
 
 class ToyDataset(Dataset):
     def __init__(self, X, y):
@@ -81,5 +100,24 @@ for epoch in range(num_epochs):
 
 model.eval()
 
-num_params =sum(p.numel() for p in model.parameters() if p.requires_grad)
-print("Total number of trainable model parameters:", num_params)
+# num_params =sum(p.numel() for p in model.parameters() if p.requires_grad)
+# print("Total number of trainable model parameters:", num_params)
+
+with torch.no_grad():
+    outputs = model(X_train)
+print(outputs)
+
+torch.set_printoptions(sci_mode=False)
+probas = torch.softmax(outputs, dim=1)
+print(probas)
+
+predictions = torch.argmax(probas, dim=1)
+print(predictions)
+
+print(compute_accuracy(model, test_loader))
+
+torch.save(model.state_dict(), "model.pth")
+
+model = NeuralNetwork(2,2)
+model.load_state_dict(torch.load("model.pth"))
+print(compute_accuracy(model, test_loader))
